@@ -1,19 +1,46 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class MidiWatcher : MonoBehaviour
+using Sanford.Multimedia.Midi;
+public static class MidiWatcher
 {
+    static MidiDevice[] devices;
     
-    // Start is called before the first frame update
-    void Start()
+    /// <summary>
+    /// Returns an array of ID of input devices containing a name
+    /// </summary>
+    public static int[] GetInputDeviceID(string name)
     {
-        
-    }
+        var result = new int[0];
+        for (int i = 0; i < InputDevice.DeviceCount; i++)
+        {
+            if (InputDevice.GetDeviceCapabilities(i).name.Contains(name))
+            {
+                var temp = new int[result.Length + 1];
+                for (int j = 0; j < result.Length; j++)
+                {
+                    temp[j] = result[j];
+                }
+                temp[result.Length] = i;
+                result = temp;
+            }
+            
+                
+        }
 
-    // Update is called once per frame
-    void Update()
+        return result;
+    }
+    /// <summary>
+    /// Returns an ID of the input device with the same name (NAME MUST BE EXACT)
+    /// </summary>
+    public static int GetOutputDeviceID(string name)
     {
-        
+        for (int i = 0; i < OutputDevice.DeviceCount; i++)
+        {
+            if (name == OutputDevice.GetDeviceCapabilities(i).name)
+                return i;
+        }
+
+        return -1;
     }
 }
