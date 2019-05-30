@@ -14,6 +14,8 @@ namespace Lambmeow.Midi
         int[] _inputIDs;
         InputDevice[] _iDevices;
         protected int _iCurrentID;
+        public Dictionary<int, MidiNote[]> ActiveNotes;
+        public Dictionary<int, MidiControl[]> ControlNotes; 
         #endregion
 
         #region Output
@@ -174,6 +176,7 @@ namespace Lambmeow.Midi
             _oDevices = null;
             _inputIDs = null;
             _outputIDs = null;
+            _active = false;
 
         }
         #endregion
