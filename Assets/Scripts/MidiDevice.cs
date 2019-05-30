@@ -1,4 +1,5 @@
 ﻿using Sanford.Multimedia.Midi;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,17 +13,16 @@ namespace Lambmeow.Midi
         #region Input
         [SerializeField] bool _hasInputValues;
         int[] _inputIDs;
-        InputDevice[] _iDevices;
+        MidiHandle[] _iDevices;
         protected int _iCurrentID;
-        public Dictionary<int, MidiNote[]> ActiveNotes;
-        public Dictionary<int, MidiControl[]> ControlNotes; 
+        
         #endregion
 
         #region Output
         [SerializeField] bool _hasOutputValues;
         int[] _outputIDs;
         OutputDevice[] _oDevices;
-        [SerializeField] int _minValue, _maxValue;
+        //[SerializeField] int _minValue, _maxValue;
         protected int _oCurrentID;
         #endregion
 
@@ -87,7 +87,12 @@ namespace Lambmeow.Midi
         /// <summary>
         /// Executed when a midi device gets pressed (input only)
         /// </summary>
-        protected virtual void OnMidiPress() { }
+        protected virtual void OnMidiPress(ChannelMessageEventArgs e) { }
+
+        /// <summary>
+        /// Executed when 
+        /// </summary>
+        protected virtual void OnSysexMessage(SysExMessageEventArgs e) { }
 
         /// <summary>
         /// Executed when a message is sent to a midi device (output only)
@@ -107,12 +112,12 @@ namespace Lambmeow.Midi
                     throw new System.Exception("A name in a MidiDevice does not contain input id values or is not typed correctly");
                 }
                 _inputIDs = id;
-                _iDevices = new InputDevice[_inputIDs.Length];
+                _iDevices = new MidiHandle[id.Length];
                 for (int i = 0; i < _inputIDs.Length; i++)
                 {
-                    _iDevices[i] = new InputDevice(_inputIDs[i]);
-                    _iDevices[i].ChannelMessageReceived += InputMessageReceived;
-                    _iDevices[i].StartRecording();
+                    _iDevices[i] = new MidiHandle(_inputIDs[i]);
+                   
+                    _iDevices[i].Activate();
                     
                 }
                 _iCurrentID = 0;
@@ -149,11 +154,8 @@ namespace Lambmeow.Midi
             OnActivate();
             _active = true;
         }
-
-        private void InputMessageReceived(object sender, ChannelMessageEventArgs e)
-        {
-            //TODO: add a struct to send data of the message(including the MidiDevice info like the InputDevice id and name of MidiDevice)
-        }
+        
+        
 
         public void Deactivate()
         {
@@ -162,7 +164,7 @@ namespace Lambmeow.Midi
             //Better safe than sorry!
             for (int i = 0; i < _iDevices.Length; i++)
             {
-                _iDevices[i].StopRecording();
+                _iDevices[i].Deactivate();
                 _iDevices[i].Dispose();
                 _iDevices[i] = null;
             }
@@ -181,4 +183,79 @@ namespace Lambmeow.Midi
         }
         #endregion
     }
+    public class MidiHandle : IDisposable
+    {
+        InputDevice _device;
+        MidiNote[] _activeNotes, _activeControl;
+
+        public bool isActive { get; private set; }
+
+        public MidiHandle(int id)
+        {
+            _device = new InputDevice(id);
+        }
+
+        ~MidiHandle()
+        {
+            Dispose();
+        }
+        public void Dispose()
+        {
+            Deactivate();
+            _device.Dispose();
+        }
+        public void Activate()
+        {
+            _device.ChannelMessageReceived += _device_ChannelMessageReceived;
+            _device.StartRecording();
+            isActive = true;
+        }
+
+        private void _device_ChannelMessageReceived(object sender, ChannelMessageEventArgs e)
+        {
+            
+            switch (e.Message.Command)
+            {
+                //regular note
+                case ChannelCommand.NoteOn:
+                    var note = new MidiNote(e.Message.Data1,e.Message.Data2,e.Message.Command);
+                    if (FindNote(_activeNotes, note.ID) == null && note.Value != 0)
+                    {
+                        AddToList(_activeNotes, note);
+                        note.First = true;
+                    }
+                    
+                    break;
+            }
+        }
+
+        public void Deactivate()
+        {
+            _device.StopRecording();
+            isActive = false;
+        }
+        
+        static MidiNote[] AddToList(MidiNote[] list,MidiNote entry)
+        {
+            var res = new MidiNote[list.Length + 1];
+            for (int i = 0; i < list.Length; i++)
+            {
+                res[i] = list[i];
+            }
+            res[list.Length] = entry;
+            return res;
+
+           
+        }
+        static MidiNote FindNote(MidiNote[] list, int id)
+        {
+            for (int i = 0; i < list.Length; i++)
+            {
+                if (list[i].ID == id)
+                    return list[i];
+            }
+            return null;
+        }
+    }
 }
+
