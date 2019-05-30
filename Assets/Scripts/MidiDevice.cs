@@ -218,13 +218,17 @@ namespace Lambmeow.Midi
             {
                 //regular note
                 case ChannelCommand.NoteOn:
-                    var note = new MidiNote(e.Message.Data1,e.Message.Data2,e.Message.Command);
-                    if (FindNote(_activeNotes, note.ID) == null && note.Value != 0)
+
+                    var index = FindNote(_activeNotes, e.Message.Data1);
+                    if ( index == -1 && e.Message.Data2 != 0)
                     {
+                        var note = new MidiNote(e.Message.Data1, e.Message.Data2, e.Message.Command);
                         AddToList(_activeNotes, note);
-                        note.First = true;
+                        _activeNotes[_activeNotes.Length - 1].First = true;
+                        break;
                     }
-                    
+                    if (e.Message.Data2 == 0)
+                        _activeNotes[index].Last = true;
                     break;
             }
         }
@@ -247,14 +251,14 @@ namespace Lambmeow.Midi
 
            
         }
-        static MidiNote FindNote(MidiNote[] list, int id)
+        static int FindNote(MidiNote[] list, int id)
         {
             for (int i = 0; i < list.Length; i++)
             {
                 if (list[i].ID == id)
-                    return list[i];
+                    return i;
             }
-            return null;
+            return -1;
         }
     }
 }
