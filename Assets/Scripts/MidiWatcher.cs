@@ -2,56 +2,69 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Sanford.Multimedia.Midi;
-public static class MidiWatcher
+
+namespace Lambmeow.Midi
 {
-    static MidiDevice[] devices;
-    
-    /// <summary>
-    /// Returns an array of ID of input devices containing a tag
-    /// </summary>
-    public static int[] GetInputDeviceID(string tags)
+    public class MidiWatcher
     {
-        var result = new int[0];
-        for (int i = 0; i < InputDevice.DeviceCount; i++)
+        MidiHardwareDevice[] devices;
+        static MidiWatcher _instance;
+        public static MidiWatcher Instance { get { if (_instance == null) _instance = new MidiWatcher(); return _instance; } }
+        public bool Active { get; private set; }
+        /// <summary>
+        /// Returns an array of ID of input devices containing a tag
+        /// </summary>
+        public static int[] GetInputDeviceID(string tags)
         {
-            if (InputDevice.GetDeviceCapabilities(i).name.Contains(tags))
+            var result = new int[0];
+            for (int i = 0; i < InputDevice.DeviceCount; i++)
             {
-                var temp = new int[result.Length + 1];
-                for (int j = 0; j < result.Length; j++)
+                if (InputDevice.GetDeviceCapabilities(i).name.Contains(tags))
                 {
-                    temp[j] = result[j];
+                    var temp = new int[result.Length + 1];
+                    for (int j = 0; j < result.Length; j++)
+                    {
+                        temp[j] = result[j];
+                    }
+                    temp[result.Length] = i;
+                    result = temp;
                 }
-                temp[result.Length] = i;
-                result = temp;
-            }
-            
-                
-        }
 
-        return result;
-    }
-    /// <summary>
-    /// Returns an ID of the input device with the same name (NAME MUST BE EXACT)
-    /// </summary>
-    public static int[] GetOutputDeviceID(string tags)
-    {
-        var result = new int[0];
-        for (int i = 0; i < OutputDevice.DeviceCount; i++)
-        {
-            if (OutputDevice.GetDeviceCapabilities(i).name.Contains(tags))
-            {
-                var temp = new int[result.Length + 1];
-                for (int j = 0; j < result.Length; j++)
-                {
-                    temp[j] = result[j];
-                }
-                temp[result.Length] = i;
-                result = temp;
+
             }
 
-
-
+            return result;
         }
-        return result;
+        public static void Activate()
+        {
+            if (Instance.Active)
+                return;
+            Instance.devices = GameObject.FindObjectsOfType<MidiHardwareDevice>();
+        }
+        /// <summary>
+        /// Returns an ID of the input device with the same name (NAME MUST BE EXACT)
+        /// </summary>
+        public static int[] GetOutputDeviceID(string tags)
+        {
+            var result = new int[0];
+            for (int i = 0; i < OutputDevice.DeviceCount; i++)
+            {
+                if (OutputDevice.GetDeviceCapabilities(i).name.Contains(tags))
+                {
+                    var temp = new int[result.Length + 1];
+                    for (int j = 0; j < result.Length; j++)
+                    {
+                        temp[j] = result[j];
+                    }
+                    temp[result.Length] = i;
+                    result = temp;
+                }
+
+
+
+            }
+            return result;
+        }
     }
 }
+

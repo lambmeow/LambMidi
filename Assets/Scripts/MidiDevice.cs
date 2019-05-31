@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Lambmeow.Midi
 {
-    public class MidiDevice : MonoBehaviour
+    public class MidiHardwareDevice : MonoBehaviour
     {
         #region Variables
 
@@ -154,8 +154,16 @@ namespace Lambmeow.Midi
             OnActivate();
             _active = true;
         }
-        
-        
+        /// <summary>
+        /// Returns a new MidiDevice (only used for creating )
+        /// </summary>
+        /// <param name="id">hardware device id</param>
+        /// <param name="device">true for input, false for output</param>
+        /// <returns></returns>
+        public static MidiHardwareDevice CreateMidiDevice(int id, bool device)
+        {
+            return null;
+        }
 
         public void Deactivate()
         {
