@@ -29,6 +29,7 @@ namespace Lambmeow.Midi
         #region Other
         bool _active = false;
         [SerializeField] string _deviceName;
+        
         #endregion
         #endregion
 
@@ -69,6 +70,7 @@ namespace Lambmeow.Midi
         /// The name of the MidiDevice 
         /// </summary>
         public string DeviceName { get => _deviceName; }
+
         #endregion
 
         #endregion
@@ -109,7 +111,8 @@ namespace Lambmeow.Midi
                 //nothing
                 if (id.Length == 0)
                 {
-                    throw new System.Exception("A name in a MidiDevice does not contain input id values or is not typed correctly");
+                    //TODO: Change this to something less extreme as it is not Exception worthy
+                    throw new Exception("A name in a MidiDevice does not contain input id values or is not typed correctly");
                 }
                 _inputIDs = id;
                 _iDevices = new MidiHandle[id.Length];
@@ -162,6 +165,7 @@ namespace Lambmeow.Midi
         /// <returns></returns>
         public static MidiHardwareDevice CreateMidiDevice(int id, bool device)
         {
+            //for now
             return null;
         }
 
@@ -246,7 +250,36 @@ namespace Lambmeow.Midi
             _device.StopRecording();
             isActive = false;
         }
-        
+        public bool GetMidiButton(int noteID)
+        {
+            for (int i = 0; i < _activeNotes.Length; i++)
+            {
+                if (_activeNotes[i].ID == noteID)
+                    return true;
+            }
+            return false;
+        }
+        public int GetMidiValue(int noteID)
+        {
+            for (int i = 0; i < _activeNotes.Length; i++)
+            {
+                if (_activeNotes[i].ID == noteID)
+                    return _activeNotes[i].Value;
+
+            }
+            return 0;
+        }
+        public MidiMessage GetMidiData(int noteID)
+        {
+            for (int i = 0; i < _activeNotes.Length; i++)
+            {
+                if (_activeNotes[i].ID == noteID)
+                {
+                    return _activeNotes[i].getData();
+                }
+            }
+            return new MidiMessage();
+        }
         static MidiNote[] AddToList(MidiNote[] list,MidiNote entry)
         {
             var res = new MidiNote[list.Length + 1];
@@ -268,6 +301,7 @@ namespace Lambmeow.Midi
             }
             return -1;
         }
+        
     }
 }
 

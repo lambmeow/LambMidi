@@ -23,16 +23,18 @@ namespace Lambmeow.Midi
     {
         int _ID;
         public bool Last, First;
-        int _value;
+        public int Value;
         public ChannelCommand Command;
         public int ID { get => _ID; }
-        public int Value { get => _value; }
+        
         
         public MidiNote(int id, int value,ChannelCommand command)
         {
             _ID = id;
-            _value = value;
+            Value = value;
             Command = command;
         }
+        public MidiMessage getData() => new MidiMessage(_ID,Value,Command,First,Last);
+        
     }
 }

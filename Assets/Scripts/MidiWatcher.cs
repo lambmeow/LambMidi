@@ -5,8 +5,7 @@ using Sanford.Multimedia.Midi;
 
 namespace Lambmeow.Midi
 {
-    public class MidiWatcher
-    {
+    public class MidiWatcher {
         MidiHardwareDevice[] devices;
         static MidiWatcher _instance;
         public static MidiWatcher Instance { get { if (_instance == null) _instance = new MidiWatcher(); return _instance; } }
@@ -37,9 +36,26 @@ namespace Lambmeow.Midi
         }
         public static void Activate()
         {
-            if (Instance.Active)
-                return;
+            
             Instance.devices = GameObject.FindObjectsOfType<MidiHardwareDevice>();
+            if (Instance.Active || Instance.devices.Length == 0)
+                return;
+            foreach (var devices in Instance.devices)
+            {
+                devices.Activate();
+            }
+            Instance.Active = true;
+        }
+
+        public static void Deactivate()
+        {
+            if (!Instance.Active)
+                return;
+            foreach (var dev in Instance.devices)
+            {
+                dev.Deactivate();
+            }
+            Instance.Active = false;
         }
         /// <summary>
         /// Returns an ID of the input device with the same name (NAME MUST BE EXACT)
