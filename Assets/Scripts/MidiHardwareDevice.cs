@@ -29,7 +29,7 @@ namespace Lambmeow.Midi
         #region Other
         bool _active = false;
         [SerializeField] string _deviceName;
-        
+        [SerializeField] bool _startOnAwake;
         #endregion
         #endregion
 
@@ -173,17 +173,24 @@ namespace Lambmeow.Midi
         {
             if (!_active)
                 return;
-            //Better safe than sorry!
-            for (int i = 0; i < _iDevices.Length; i++)
+            
+            if (HasInputValues)
             {
-                _iDevices[i].Deactivate();
-                _iDevices[i].Dispose();
-                _iDevices[i] = null;
+                //Better safe than sorry!
+                for (int i = 0; i < _iDevices.Length; i++)
+                {
+                    _iDevices[i].Deactivate();
+                    _iDevices[i].Dispose();
+                    _iDevices[i] = null;
+                }
             }
-            for (int i = 0; i < _oDevices.Length; i++)
+            if (HasOutputValues)
             {
-                _oDevices[i].Dispose();
-                _oDevices[i] = null;
+                for (int i = 0; i < _oDevices.Length; i++)
+                {
+                    _oDevices[i].Dispose();
+                    _oDevices[i] = null;
+                }
             }
             
             _iDevices = null;
@@ -193,7 +200,16 @@ namespace Lambmeow.Midi
             _active = false;
 
         }
+        void Awake()
+        {
+            if (_startOnAwake) Activate();
+        }
+         void OnDisable()
+        {
+            Deactivate();
+        }
         #endregion
+
     }
     public class MidiHandle : IDisposable
     {
@@ -220,6 +236,8 @@ namespace Lambmeow.Midi
         {
             _device.ChannelMessageReceived += _device_ChannelMessageReceived;
             _device.StartRecording();
+            _activeNotes = new MidiNote[0];
+            _activeControl = new MidiNote[0];
             isActive = true;
         }
 
@@ -235,7 +253,7 @@ namespace Lambmeow.Midi
                     if ( index == -1 && e.Message.Data2 != 0)
                     {
                         var note = new MidiNote(e.Message.Data1, e.Message.Data2, e.Message.Command);
-                        AddToList(_activeNotes, note);
+                        _activeNotes = AddToList(_activeNotes, note);
                         _activeNotes[_activeNotes.Length - 1].First = true;
                         break;
                     }
