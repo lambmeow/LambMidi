@@ -8,9 +8,9 @@ namespace Lambmeow.Midi
     {
         public int Data1, Data2;
         public ChannelCommand MessageType;
-        public bool FirstTime,LastTime;
+        public int FirstTime,LastTime;
         
-        public MidiMessage(int data1, int data2, ChannelCommand message, bool firsttime,bool lasttime)
+        public MidiMessage(int data1, int data2, ChannelCommand message, int firsttime,int lasttime)
         {
             Data1 = data1;
             Data2 = data2;
@@ -22,7 +22,7 @@ namespace Lambmeow.Midi
     public class MidiNote
     {
         int _ID;
-        public bool Last, First;
+        public int Last, First;
         public int Value;
         public ChannelCommand Command;
         public int ID { get => _ID; }
